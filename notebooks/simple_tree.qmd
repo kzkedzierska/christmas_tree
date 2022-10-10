@@ -1,5 +1,5 @@
 ---
-title: "first_try"
+title: "Simple tree - first try"
 format: html
 editor_options: 
   chunk_output_type: console
@@ -27,6 +27,13 @@ start_letters <- end_letters + 1
 end_letters <- start_letters + length(trunk_colors) - 1
 names(trunk_colors) <-  letters[start_letters:end_letters]
 all_colors <- c(tree_colors, baubles_colors, trunk_colors)
+
+# baubles
+n_baubles <- 30
+n_baubles_sizes <- 3
+baubles_sizes <- 
+  1:n_baubles_sizes * 1.5
+names(baubles_sizes) <- paste0("bauble", baubles_sizes)
 ```
 
 Define plotting function to check different parts
@@ -96,12 +103,6 @@ df_trunk %>%
 and the baubles
 
 ```{r}
-n_baubles <- 30
-n_baubles_sizes <- 3
-baubles_sizes <- 
-  1:n_baubles_sizes * 1.5
-names(baubles_sizes) <- paste0("bauble", baubles_sizes)
-
 df_baubles <-
   tibble(x = sample(seq(0, width/2, length.out = z), 
                       n_baubles, replace = TRUE)) %>%
