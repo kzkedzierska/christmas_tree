@@ -1,0 +1,131 @@
+---
+title: "first_try"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup}
+library(tidyverse)
+```
+
+Set some defaults that can be later changeable.
+
+```{r}
+
+tree_colors <- c( "#344e41", "#3a5a40", "#588157", "#a3b18a")
+start_letters <- 1
+end_letters <- length(tree_colors)
+names(tree_colors) <- letters[1:end_letters]
+baubles_colors <- c("#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93")
+baubles_colors <- c("#f6aa1c", "#941b0c")
+start_letters <- end_letters + 1
+end_letters <- start_letters + length(baubles_colors) - 1
+names(baubles_colors) <- letters[start_letters:end_letters]
+trunk_colors <- c("#582f0e")
+start_letters <- end_letters + 1
+end_letters <- start_letters + length(trunk_colors) - 1
+names(trunk_colors) <-  letters[start_letters:end_letters]
+all_colors <- c(tree_colors, baubles_colors, trunk_colors)
+```
+
+Define plotting function to check different parts
+
+```{r}
+plot_christmas_tree <- function(df) {
+  df %>%
+    ggplot(aes(x, y, color = col, shape = shape, size = size)) +
+    geom_point() +
+    scale_color_manual(values = all_colors) +
+    scale_shape_manual(values = c("tree" = 8, "trunk" = 15, "bauble" = 19)) +
+    scale_size_manual(values = c("tree" = 1, "trunk" = 1, 
+                                 baubles_sizes)) +
+    coord_equal() +
+    theme_void() +
+    theme(legend.position = "none")
+}
+
+```
+
+Now, the tree!
+
+
+```{r}
+height <- 5
+width <- 3
+n <- 1000
+
+z <- 100
+df_tree <-
+  tibble(x = sample(seq(0, width/2, length.out = z), 
+                      n, replace = TRUE,
+                  prob = (z:1)/z)) %>%
+  mutate(y_max = (width/2 - x) * height/(width/2),
+         sign = sample(c(1,-1), n, replace = TRUE),
+         x = x * sign,
+         fract = sample(seq(0, 1, length.out = z), 
+                        n, replace = TRUE),
+         y = fract * y_max,
+         col = sample(names(tree_colors), n, replace = TRUE), 
+         size = "tree", shape = "tree")
+
+df_tree %>%
+  plot_christmas_tree()
+```
+
+Add the trunk
+
+```{r}
+n_trunk <- 100
+df_trunk <- 
+  tibble(x = sample(seq(0, (width/2)*0.1, length.out = 10), 
+                      n_trunk, replace = TRUE)) %>%
+  mutate(y_max = (width/2)*0.3,
+         sign = sample(c(1,-1), n_trunk, replace = TRUE),
+         x = x * sign,
+         fract = sample(seq(0, 1, length.out = z), 
+                        n_trunk, replace = TRUE),
+         y = -1 * fract * y_max,
+         col = names(trunk_colors), 
+         size = "trunk", shape = "trunk") 
+
+df_trunk %>%
+  plot_christmas_tree()
+```
+
+and the baubles
+
+```{r}
+n_baubles <- 30
+n_baubles_sizes <- 3
+baubles_sizes <- 
+  1:n_baubles_sizes * 1.5
+names(baubles_sizes) <- paste0("bauble", baubles_sizes)
+
+df_baubles <-
+  tibble(x = sample(seq(0, width/2, length.out = z), 
+                      n_baubles, replace = TRUE)) %>%
+  mutate(y_max = (width/2 - x) * height/(width/2),
+         sign = sample(c(1,-1), n_baubles, replace = TRUE),
+         x = x * sign,
+         fract = sample(seq(0, 1, length.out = z), 
+                        n_baubles, replace = TRUE,
+                        prob = (1:z)/z),
+         y = fract * y_max,
+         col = sample(names(baubles_colors), n_baubles, replace = TRUE), 
+         size = sample(names(baubles_sizes), 
+                       size = n_baubles, replace = TRUE), 
+         shape = "bauble")
+
+df_baubles %>%
+  plot_christmas_tree()
+```
+
+And finally, the ensemble!
+
+```{r}
+list(df_tree, df_trunk, df_baubles) %>%
+  bind_rows() %>%
+  plot_christmas_tree()
+```
+
